@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Scanner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/instascan/1.0.0/instascan.min.js"></script>
+</head>
+<body>
+    <h1>QR Code Scanner</h1>
+    <video id="preview" width="320" height="240"></video>
+    <script>
+        let scanner = new Instascan.Scanner({ video: document.getElementById('preview'), scanPeriod: 5 });
+        scanner.addListener('scan', function (content) {
+            console.log('Scanned content:', content);
+            fetch('<WEB_APP_URL>', { // Replace <WEB_APP_URL> with your Google Apps Script Web App URL
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'email=' + encodeURIComponent(content) + '&action=check-in'
+            }).then(response => {
+                console.log('Server response:', response);
+            }).catch(error => {
+                console.error('Error posting to server:', error);
+            });
+        });
+
+        Instascan.Camera.getCameras().then(function (cameras) {
+            if (cameras.length > 0) {
+                scanner.start(cameras[0]);
+            } else {
+                console.error('No cameras found.');
+            }
+        }).catch(function (e) {
+            console.error('Error initializing cameras:', e);
+        });
+    </script>
+</body>
+</html>
